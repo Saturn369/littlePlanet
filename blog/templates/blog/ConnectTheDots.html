@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+
+<style id="webmakerstyle">
+
+</style>
+</head>
+<body>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+
+<style id="webmakerstyle">
+
+</style>
+</head>
+<body>
+<!doctype html>
+<html>
+  <head>
+    <center><marquee><header>Life is beautiful</header></marquee>
+    <title>Sweet</title>
+  </center>
+    <style>
+    </style>
+  </head>
+  <body>
+    <canvas id="dots" style="position:absolute;background:white;left:365px;top:101px"></canvas>
+    <div id="messages" style="position:absolute;top:400px;left:450px;width:100px">Player one's turn.</div>
+  </body>
+</html>
+
+<script>
+
+</script>
+</body>
+</html>
+
+<script>
+var data = {
+    canvas: null,
+    ctx: null,
+    clickedDot: null,
+    dots: [{
+        x: 50,
+        y: 50
+    }, {
+        x: 50,
+        y: 100
+    }, {
+        x: 50,
+        y: 150
+    }, {
+        x: 50,
+        y: 200
+    }, {
+        x: 100,
+        y: 50
+    }, {
+        x: 100,
+        y: 100
+    }, {
+        x: 100,
+        y: 150
+    }, {
+        x: 100,
+        y: 200
+    }, {
+        x: 150,
+        y: 50
+    }, {
+        x: 150,
+        y: 100
+    }, {
+        x: 150,
+        y: 150
+    }, {
+        x: 150,
+        y: 200
+    }, {
+        x: 200,
+        y: 50
+    }, {
+        x: 200,
+        y: 100
+    }, {
+        x: 200,
+        y: 150
+    }, {
+        x: 200,
+        y: 200
+    }],
+    selected: [],
+    beginning: [],
+    end: [],
+    newGame: true,
+    selectedLines: [],
+    turn: 0
+};
+
+var canvasRef = document.getElementById("dots");
+
+var messagesRef = document.getElementById("messages");
+
+var endClosed = ""
+
+function whoWon(){
+if(Number(data.turn == 0)) {
+  return 2;
+  
+}
+                      
+  else{
+    return 1;
+  }
+}
+
+function whosTurn() {
+
+
+    if (data.turn == 0) {
+        messagesRef.innerHTML = "Player two's turn"
+        data.turn = 1
+    } else {
+        messagesRef.innerHTML = "Player one's turn"
+        data.turn = 0
+    }
+}
+
+function changeDotColor(dot, color) {
+    data.ctx.beginPath();
+    data.ctx.arc(dot.x, dot.y, 10, 0, 2 * Math.PI);
+    data.ctx.fillStyle = color;
+    data.ctx.fill();
+    data.ctx.closePath();
+}
+
+function circleCollision(c1, c2) {
+    var a = c1.r * c2.r,
+        x = c1.x - c2.x,
+        xinv = c1.x + c2.x,
+        y = c1.y - c2.y,
+        yinv = c1.y + c2.y;
+    if ((x < 8) && (x > -23) && (y < -12) && (y > -42)) {
+        return true;
+
+    } else return false;
+}
+
+function prepCanvas() {
+    var res = window.devicePixelRatio || 1,
+        scale = 1 / res;
+
+    data.canvas = document.getElementById("dots");
+
+    data.ctx = data.canvas.getContext("2d");
+
+    data.canvas.width = window.innerWidth * res;
+
+    data.canvas.height = window.innerHeight * res;
+
+    data.canvas.style.width = window.innerWidth + "px";
+
+    data.canvas.style.height = window.innerHeight + "px";
+
+    data.ctx.scale(res, res);
+
+    canvasRef.addEventListener("mousedown", function(e) {
+        checkForDot(e);
+
+    })
+}
+
+function drawDots() {
+    var i = 0;
+    for (; i < data.dots.length; i++) {
+        var d = data.dots[i];
+        data.ctx.beginPath();
+        data.ctx.arc(d.x, d.y, 10, 0, 2 * Math.PI);
+        data.ctx.fillStyle = "pink";
+        data.ctx.fill();
+        data.ctx.closePath();
+    }
+}
+
+function drawLine(toDot) {
+    data.ctx.beginPath();
+    data.ctx.moveTo(data.clickedDot.x, data.clickedDot.y);
+    data.ctx.lineTo(toDot.x, toDot.y);
+    data.ctx.lineWidth = 6;
+    data.ctx.strokeStyle = "blue";
+    data.ctx.stroke();
+    data.ctx.closePath();
+
+    iList = {
+        x1: data.clickedDot.x,
+        y1: data.clickedDot.y,
+        x2: toDot.x,
+        y2: toDot.y
+    }
+
+    data.selectedLines[data.selectedLines.length] = iList
+
+
+
+}
+
+function checkForCrossedSwords(a, b) {
+    for (i = 0; i < data.selectedLines.length; i++) {
+        if ((data.selectedLines[i].x1 == a.x) && (data.selectedLines[i].y1 == b.y) && (data.selectedLines[i].x2 == b.x) && (data.selectedLines[i].y2 == a.y) || (data.selectedLines[i].x2 == a.x) && (data.selectedLines[i].y2 == b.y) && (data.selectedLines[i].x1 == b.x) && (data.selectedLines[i].y1 == a.y)) {
+            return true;
+        }
+
+    }
+    return false;
+
+}
+
+function gameOverDetection(a) {
+
+    possibleNodes = 8
+
+    offMap = 0
+
+    foundList = [false, false, false, false, false, false, false, false];
+
+    offMapList = [false, false, false, false];
+
+    for (i = 0; i < data.selected.length; i++) {
+        if ((data.selected[i].x == a.x + 50) && (data.selected[i].y == a.y) && (foundList[0] == false)) {
+            possibleNodes--
+            foundList[0] = true
+
+
+        }
+        if ((data.selected[i].x == a.x - 50) && (data.selected[i].y == a.y) && (foundList[1] == false)) {
+            possibleNodes--
+            foundList[1] = true
+
+
+        }
+        if ((data.selected[i].y == a.y + 50) && (data.selected[i].x == a.x) && (foundList[2] == false)) {
+            possibleNodes--
+            foundList[2] = true
+
+
+        }
+        if ((data.selected[i].y == a.y - 50) && (data.selected[i].x == a.x) && (foundList[3] == false)) {
+            possibleNodes--
+            foundList[3] = true
+
+
+        }
+        if ((data.selected[i].y == a.y - 50) && (data.selected[i].x == a.x - 50) && (foundList[4] == false)) {
+            possibleNodes--
+            foundList[4] = true
+                //alert("Active diagonal node found-y-x.")
+
+        }
+        if ((data.selected[i].y == a.y - 50) && (data.selected[i].x == a.x + 50) && (foundList[5] == false)) {
+            possibleNodes--
+            foundList[5] = true
+
+
+        }
+        if ((data.selected[i].y == a.y + 50) && (data.selected[i].x == a.x - 50) && (foundList[6] == false)) {
+            possibleNodes--
+            foundList[6] = true
+
+
+        }
+        if ((data.selected[i].y == a.y + 50) && (data.selected[i].x == a.x + 50) && (foundList[7] == false)) {
+            possibleNodes--
+            foundList[7] = true
+
+
+        }
+    }
+
+    if (a.y - 50 < 50) {
+        offMap += 1;
+        offMapList[0] = true
+    }
+    if (a.y + 50 > 200) {
+        offMap += 1;
+        offMapList[1] = true
+    }
+    if (a.x - 50 < 50) {
+        offMap += 1;
+        offMapList[2] = true
+    }
+    if (a.x + 50 > 200) {
+        offMap += 1;
+        offMapList[3] = true
+    }
+
+    if ((foundList[4] == false) && (offMapList[0] == false) && (offMapList[2] == false)) {
+
+        if (checkForCrossedSwords(a, b = {
+                x: a.x - 50,
+                y: a.y - 50
+            }) == true) {
+            possibleNodes--
+        }
+    }
+
+    if ((foundList[5] == false) && (offMapList[0] == false) && (offMapList[3] == false)) {
+
+        if (checkForCrossedSwords(a, b = {
+                x: a.x + 50,
+                y: a.y - 50
+            }) == true) {
+            possibleNodes--
+        }
+    }
+
+    if ((foundList[6] == false) && (offMapList[2] == false) && (offMapList[1] == false)) {
+
+        if (checkForCrossedSwords(a, b = {
+                x: a.x - 50,
+                y: a.y + 50
+            }) == true) {
+            possibleNodes--
+        }
+    }
+
+    if ((foundList[7] == false) && (offMapList[3] == false) && (offMapList[1] == false)) {
+
+        if (checkForCrossedSwords(a, b = {
+                x: a.x + 50,
+                y: a.y + 50
+            }) == true) {
+            possibleNodes--
+        }
+    }
+
+    if (offMap == 1) {
+        possibleNodes -= 3;
+    } else if (offMap == 2) {
+        possibleNodes -= 5;
+    }
+
+    return possibleNodes;
+}
+
+function checkForDot(e) {
+    var i = 0,
+        col = null;
+    for (; i < data.dots.length; i++) {
+
+        var d = data.dots[i],
+            c1 = {
+                x: d.x,
+                y: d.y,
+                r: 10
+            },
+            c2 = {
+                x: Number(e.pageX - 365),
+                y: Number(e.pageY - 81),
+                r: 10
+            };
+        if (circleCollision(c1, c2)) {
+            col = d;
+
+
+
+        }
+    }
+    if (col !== null) {
+
+        if ((data.clickedDot !== null) && (data.clickedDot.x - col.x > -51) && (col.x - data.clickedDot.x > -51) && (data.clickedDot.y - col.y > -51) && (col.y - data.clickedDot.y > -51)) {
+
+            if (data.newGame == false) {
+
+                //This checks to see if user has selected any active nodes
+                for (i = 0; i < data.selected.length; i++) {
+
+                    if ((data.selected[i].y == col.y) && (data.selected[i].x == col.x)) {
+                        for (j = 0; j < data.selected.length; j++) {
+
+                            if ((data.selected[j].y == data.clickedDot.y) && (data.selected[j].x == data.clickedDot.x)) {
+
+                                messagesRef.innerHTML = "Illegal move."
+
+                                col = null;
+                                data.clickedDot = null;
+
+                                return;
+
+                            }
+
+                        }
+                    }
+                }
+
+
+                //Here I check if potential lines would intersect. If so, connection is cancelled.
+
+                intersected = checkForCrossedSwords(col, data.clickedDot);
+                if (intersected == true) {
+                    col = null;
+                    data.clickedDot = null;
+                    return;
+                }
+
+                if ((data.clickedDot.x != data.beginning.x) && (data.clickedDot.y != data.beginning.y) && (data.clickedDot.x != data.end.x) && (data.clickedDot.y != data.end.y)) {
+
+                    messagesRef.innerHTML = "Please draw your line starting at either the end or beginning node."
+
+                    col = null;
+                    changeDotColor(data.clickedDot, "pink")
+                    data.clickedDot = null;
+                    return;
+                } else if ((data.clickedDot.x == data.beginning.x) && (data.clickedDot.y == data.beginning.y)) {
+
+                    data.beginning = col
+
+                    drawLine(col);
+
+                    data.selected[data.selected.length] = col;
+
+                    data.selected[data.selected.length] = data.clickedDot;
+
+                    changeDotColor(col, "blue")
+
+                    beginningClosed = gameOverDetection(col);
+
+                    if (beginningClosed == 0) {
+                        endClosed = gameOverDetection(data.end);
+                    }
+
+                    if (endClosed + beginningClosed == 0) {
+
+                      winner = whoWon()
+                      
+                      messagesRef.innerHTML = "Game over. Player " + winner + " is the winner!";
+                      
+                      col = null;
+                data.clickedDot = null
+
+                        return;
+                    }
+
+                    whosTurn()
+
+                    col = null;
+                    data.clickedDot = null;
+                } else if ((data.clickedDot.x == data.end.x) && (data.clickedDot.y == data.end.y)) {
+
+
+                    data.end = col
+
+                    drawLine(col);
+
+                    data.selected[data.selected.length] = col;
+
+                    endClosed = gameOverDetection(col)
+
+                    if (endClosed == 0) {
+                        beginningClosed = gameOverDetection(data.beginning)
+                    }
+                    changeDotColor(col, "blue")
+                    col = null;
+                    data.clickedDot = null;
+                    if (endClosed + beginningClosed == 0) {
+winner = whoWon()
+                        messagesRef.innerHTML = "Game over. Player " + winner + " is the winner!";
+                      
+                      col = null;
+                data.clickedDot = null
+                      
+                        return;
+                    }
+
+                    whosTurn()
+
+
+                }
+
+
+
+            }
+            //Here I check to see whether or not there are any occupied nodes in the vacinity of the newly added node
+
+
+
+            if (data.newGame == true) {
+
+                changeDotColor(data.clickedDot, "blue")
+                changeDotColor(col, "blue")
+
+                whosTurn()
+
+                data.newGame = false;
+
+                data.beginning = col;
+
+                data.end = data.clickedDot;
+
+                drawLine(col);
+
+                data.selected[data.selected.length] = col;
+
+                data.selected[data.selected.length] = data.clickedDot;
+
+
+                col = null;
+                data.clickedDot = null;
+            }
+
+
+            col = null;
+            data.clickedDot = null;
+
+        } else {
+            if (data.clickedDot != null) {
+                messagesRef.innerHTML = "Too far away.";
+                col = null;
+                data.clickedDot = null;
+            }
+
+
+
+
+        }
+        data.clickedDot = col;
+
+    } else {
+        data.clickedDot = col
+
+        col = null;
+    }
+}
+
+prepCanvas();
+drawDots();
+//# sourceURL=userscript.js
+//# sourceURL=userscript.js
+</script>
+</body>
+</html>
