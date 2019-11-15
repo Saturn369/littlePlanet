@@ -1,0 +1,36 @@
+{% extends "blog/base.html" %}
+{% load crispy_forms_tags %}
+{% block liver %}
+<style>
+    .uploadButtons{
+        background-color:lightblue;
+        border-radius: 5px;
+         padding: 5px 5px 5px 5px;
+    }
+</style>
+	<h2>Upload</h2>
+	<div class="media">
+    <img class="rounded-circle account-img" src="{{ user.profile.image.url }}">
+    <div class="media-body">
+      <h2 class="account-heading">{{ user.username }}</h2>
+      <p class="text-secondary">{{ user.email }}</p>
+    </div>
+  </div>
+  <p>
+  <div>
+  <hr>
+  <table>
+  	{% for i in ads %}
+	{% if i.user == user.username %}
+	<tr>
+	<th><a href="{{i.location}}"><img class="rounded-circle account-img" src="{{ i.location }}"></a></th>
+	<th>Image Name: {{ i.name }}
+	<tr>
+	<th><hr></th>
+	{% endif %}
+	{% endfor %}
+	</table>
+  </div>
+  </p>
+
+{% endblock liver %}
